@@ -2,6 +2,7 @@ package http
 
 import (
 	"github.com/eran-levy/tokenizer-gophercon/logger"
+	"github.com/eran-levy/tokenizer-gophercon/telemetry"
 	"github.com/gin-gonic/gin"
 	"time"
 )
@@ -14,6 +15,8 @@ func Logger() gin.HandlerFunc {
 		raw := c.Request.URL.RawQuery
 		c.Next()
 		//after request
-		logger.Log.With("path", path).With("query_params", raw).With("duration", time.Now().Sub(start)).Info("API request")
+		d := time.Since(start).Milliseconds()
+		logger.Log.With("path", path).With("query_params", raw).With("duration", d).Info("API request")
+		telemetry.RecordAPIRequestLatencyValue(c.Request.Context(), d, path, telemetry.SuccessStatusValue)
 	}
 }

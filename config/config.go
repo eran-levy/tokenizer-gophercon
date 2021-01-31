@@ -21,10 +21,17 @@ type RESTApiAdapterParams struct {
 type TelemetryParams struct {
 	TracingAgentEndpoint string
 }
+type CacheParams struct {
+	CacheSize      int
+	CacheAddress   string
+	ReadTimeout    time.Duration
+	ExpirationTime time.Duration
+}
 type EnvConfiguration struct {
 	Service        ServiceParams
 	RESTApiAdapter RESTApiAdapterParams
 	Telemetry      TelemetryParams
+	Cache          CacheParams
 }
 
 // Load default configs. Using spf13/viper here, you can use any library that fit your needs.
@@ -59,5 +66,10 @@ func LoadConfig() (EnvConfiguration, error) {
 			TerminationTimeout:   env.GetDuration("service.REST_API_HTTP_TERMINATION_TIMEOUT"),
 			ReadRequestTimeout:   env.GetDuration("service.REST_API_HTTP_READ_REQUEST_TIMEOUT"),
 			WriteResponseTimeout: env.GetDuration("service.REST_API_HTTP_WRITE_RESPONSE_TIMEOUT"),
-		}, Telemetry: TelemetryParams{TracingAgentEndpoint: env.GetString("service.TELEMETRY_JAEGER_ENDPOINT")}}, nil
+		},
+		Telemetry: TelemetryParams{TracingAgentEndpoint: env.GetString("service.TELEMETRY_JAEGER_ENDPOINT")},
+		Cache: CacheParams{CacheSize: env.GetInt("service.CACHE_SIZE_INT"),
+			CacheAddress:   env.GetString("service.CACHE_ADDRESS"),
+			ReadTimeout:    env.GetDuration("service.CACHE_READ_TIMEOUT"),
+			ExpirationTime: env.GetDuration("service.CACHE_KEYS_EXPIRY_TTL")}}, nil
 }

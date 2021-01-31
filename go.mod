@@ -5,7 +5,9 @@ go 1.15
 require (
 	github.com/gin-contrib/pprof v1.3.0
 	github.com/gin-gonic/gin v1.6.3
+	github.com/go-redis/redis/v8 v8.4.11
 	github.com/google/uuid v1.2.0
+	github.com/hashicorp/golang-lru v0.5.1
 	github.com/pkg/errors v0.9.1
 	github.com/spf13/viper v1.7.1
 	go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin v0.16.0

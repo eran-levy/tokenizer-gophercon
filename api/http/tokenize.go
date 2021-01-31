@@ -20,7 +20,7 @@ func (s *RestApiAdapter) tokenizeTextHandler(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, ErrorResponse{Status: "Invalid request", Message: requestNotValid.Error()})
 		return
 	}
-	dr := service.TokenizeTextRequest{RequestId: uuid.New().String(), Txt: r.Txt}
+	dr := service.TokenizeTextRequest{GlobalTxId: r.GlobalTxId, RequestId: uuid.New().String(), Txt: r.Txt}
 	tr, err := s.ts.TokenizeText(ctx, dr)
 	if err != nil {
 		span.SetStatus(codes.Error, err.Error())

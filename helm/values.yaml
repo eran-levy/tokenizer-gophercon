@@ -1,5 +1,5 @@
 service:
-  LOG_LEVEL: "debug"
+  LOG_LEVEL: "info"
   APPLICATION_ID: "tokenizer-gophercon"
   DEBUG_MODE_ENABLED: true
   REST_API_HTTP_ADDRESS: ":8080"
@@ -7,3 +7,7 @@ service:
   REST_API_HTTP_READ_REQUEST_TIMEOUT: "30s"
   REST_API_HTTP_WRITE_RESPONSE_TIMEOUT: "30s"
   TELEMETRY_JAEGER_ENDPOINT: "http://localhost:14268/api/traces"
+  CACHE_SIZE_INT: 5
+  CACHE_ADDRESS: "localhost:6379"
+  CACHE_READ_TIMEOUT: "3s"
+  CACHE_KEYS_EXPIRY_TTL: "30s"

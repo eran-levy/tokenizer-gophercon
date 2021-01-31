@@ -40,8 +40,10 @@ type Telemetry struct {
 
 var (
 	apiRequestCounter metric.Int64Counter
+	apiRequestLatency metric.Int64ValueRecorder
 	serviceNameKV     label.KeyValue
 	statusKey         = label.Key("status")
+	pathKey           = label.Key("http.path")
 )
 
 const (
@@ -64,7 +66,8 @@ func New(config Config) (Telemetry, func(), error) {
 		return Telemetry{}, nil, errors.Wrap(err, "could not init host metrics")
 	}
 	serviceNameKV = label.String("service", config.ServiceName)
-	apiRequestCounter = metric.Must(meter).NewInt64Counter("service_http_request_counter")
+	apiRequestCounter = metric.Must(meter).NewInt64Counter("service_request_counter")
+	apiRequestLatency = metric.Must(meter).NewInt64ValueRecorder("service_request_latency")
 
 	t := otel.Tracer(InstrumentationName)
 	otel.SetTextMapPropagator(propagation.NewCompositeTextMapPropagator(propagation.TraceContext{}, propagation.Baggage{}))
@@ -83,7 +86,7 @@ func New(config Config) (Telemetry, func(), error) {
 	return Telemetry{Tracer: t, Config: config}, flush, err
 }
 func GetMeterHandlerToServe() (*prometheus.Exporter, error) {
-	exporter, err := prometheus.InstallNewPipeline(prometheus.Config{})
+	exporter, err := prometheus.InstallNewPipeline(prometheus.Config{DefaultHistogramBoundaries: []float64{0, 1, 5, 10, 20, 40, 50, 80, 120, 180, 200}})
 	if err != nil {
 		return nil, errors.Wrap(err, "could not install prometheus exporter pipeline")
 	}
@@ -105,4 +108,8 @@ func isConfigValid(config Config) bool {
 
 func IncAPIRequestCounter(ctx context.Context, v int64, status string) {
 	apiRequestCounter.Add(ctx, v, serviceNameKV, statusKey.String(status))
+}
+
+func RecordAPIRequestLatencyValue(ctx context.Context, v int64, path string, status string) {
+	apiRequestLatency.Record(ctx, v, serviceNameKV, pathKey.String(path), statusKey.String(status))
 }
