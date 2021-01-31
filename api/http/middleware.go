@@ -1,4 +1,4 @@
-package middleware
+package http
 
 import (
 	"github.com/eran-levy/tokenizer-gophercon/logger"

@@ -4,11 +4,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/eran-levy/tokenizer-gophercon/api/http/middleware"
 	"github.com/eran-levy/tokenizer-gophercon/logger"
 	"github.com/eran-levy/tokenizer-gophercon/service"
+	"github.com/eran-levy/tokenizer-gophercon/telemetry"
 	"github.com/gin-contrib/pprof"
 	"github.com/gin-gonic/gin"
+	"go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin"
 	"net/http"
 	"time"
 )
@@ -30,26 +31,35 @@ type RestApiAdapterConfiguration struct {
 	IsDebugModeEnabled   bool
 }
 type RestApiAdapter struct {
-	cfg RestApiAdapterConfiguration
-	srv *http.Server
-	ts  service.TokenizerService
+	cfg       RestApiAdapterConfiguration
+	srv       *http.Server
+	ts        service.TokenizerService
+	telemetry telemetry.Telemetry
 }
 
-func New(cfg RestApiAdapterConfiguration, ts service.TokenizerService) *RestApiAdapter {
+func New(cfg RestApiAdapterConfiguration, ts service.TokenizerService, telemetry telemetry.Telemetry) *RestApiAdapter {
 	if !cfg.IsDebugModeEnabled {
 		gin.SetMode(gin.ReleaseMode)
 	}
-	return &RestApiAdapter{cfg: cfg, ts: ts}
+	return &RestApiAdapter{cfg: cfg, ts: ts, telemetry: telemetry}
 }
 
 func (s *RestApiAdapter) Start(fatalErrors chan<- error) {
 	r := gin.New()
-	r.Use(middleware.Logger())
+	r.Use(Logger())
+	r.Use(otelgin.Middleware(s.telemetry.Config.ServiceName))
 
 	if s.cfg.IsDebugModeEnabled {
 		//in case not using the default sever mux, register each one of the pprof routes
 		pprof.Register(r)
 	}
+	//TODO: consider moving to telemetry pkg
+	exp, err := telemetry.GetMeterHandlerToServe()
+	if err != nil {
+		logger.Log.Errorf("could not init metrics exporter: %s\n", err)
+		fatalErrors <- err
+	}
+	r.GET("/metrics", MetricHandler(exp))
 	r.GET("/health", health)
 	r.GET("/readiness", readiness)
 	//its possible also to activate middleware for a given group - just by pasing the middleware to r.Group
