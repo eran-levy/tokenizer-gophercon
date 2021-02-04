@@ -18,6 +18,11 @@ type RESTApiAdapterParams struct {
 	ReadRequestTimeout   time.Duration
 	WriteResponseTimeout time.Duration
 }
+type GRPCApiAdapterParams struct {
+	GrpcAddress           string
+	MaxConnectionAge      time.Duration
+	MaxConnectionAgeGrace time.Duration
+}
 type TelemetryParams struct {
 	TracingAgentEndpoint string
 }
@@ -27,11 +32,19 @@ type CacheParams struct {
 	ReadTimeout    time.Duration
 	ExpirationTime time.Duration
 }
+type DatabaseParams struct {
+	Dsn                   string
+	ConnectionMaxLifetime time.Duration
+	MaxOpenConnections    int
+	MaxIdleConnections    int
+}
 type EnvConfiguration struct {
 	Service        ServiceParams
 	RESTApiAdapter RESTApiAdapterParams
+	GRPCApiAdapter GRPCApiAdapterParams
 	Telemetry      TelemetryParams
 	Cache          CacheParams
+	Database       DatabaseParams
 }
 
 // Load default configs. Using spf13/viper here, you can use any library that fit your needs.
@@ -66,10 +79,16 @@ func LoadConfig() (EnvConfiguration, error) {
 			TerminationTimeout:   env.GetDuration("service.REST_API_HTTP_TERMINATION_TIMEOUT"),
 			ReadRequestTimeout:   env.GetDuration("service.REST_API_HTTP_READ_REQUEST_TIMEOUT"),
 			WriteResponseTimeout: env.GetDuration("service.REST_API_HTTP_WRITE_RESPONSE_TIMEOUT"),
-		},
+		}, GRPCApiAdapter: GRPCApiAdapterParams{GrpcAddress: env.GetString("service.GRPC_API_ADDRESS"),
+			MaxConnectionAge:      env.GetDuration("service.GRPC_API_MAX_CONNECTION_AGE"),
+			MaxConnectionAgeGrace: env.GetDuration("service.GRPC_API_MAX_CONNECTION_AGE_GRACE")},
 		Telemetry: TelemetryParams{TracingAgentEndpoint: env.GetString("service.TELEMETRY_JAEGER_ENDPOINT")},
 		Cache: CacheParams{CacheSize: env.GetInt("service.CACHE_SIZE_INT"),
 			CacheAddress:   env.GetString("service.CACHE_ADDRESS"),
 			ReadTimeout:    env.GetDuration("service.CACHE_READ_TIMEOUT"),
-			ExpirationTime: env.GetDuration("service.CACHE_KEYS_EXPIRY_TTL")}}, nil
+			ExpirationTime: env.GetDuration("service.CACHE_KEYS_EXPIRY_TTL")},
+		Database: DatabaseParams{Dsn: env.GetString("service.DB_DSN"),
+			ConnectionMaxLifetime: env.GetDuration("service.DB_CONNECTIONS_MAX_LIFE_TIME"),
+			MaxOpenConnections:    env.GetInt("service.DB_MAX_OPEN_CONNECTIONS"),
+			MaxIdleConnections:    env.GetInt("service.DB_MAX_IDLE_CONNECTIONS")}}, nil
 }

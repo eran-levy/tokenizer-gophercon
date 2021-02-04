@@ -10,7 +10,7 @@ import (
 	"net/http"
 )
 
-func (s *RestApiAdapter) tokenizeTextHandler(c *gin.Context) {
+func (s *restApiAdapter) tokenizeTextHandler(c *gin.Context) {
 	ctx, span := s.telemetry.Tracer.Start(c.Request.Context(), "tokenizeTextHandler")
 	defer span.End()
 	var r internal.TokenizeTextAPIRequest

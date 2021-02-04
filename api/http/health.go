@@ -6,6 +6,7 @@ import (
 	"os"
 )
 
+//TODO: add services healthchecks db, etc
 func health(c *gin.Context) {
 	c.String(http.StatusOK, "OK")
 }

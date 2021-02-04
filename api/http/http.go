@@ -30,21 +30,21 @@ type RestApiAdapterConfiguration struct {
 	WriteResponseTimeout time.Duration
 	IsDebugModeEnabled   bool
 }
-type RestApiAdapter struct {
+type restApiAdapter struct {
 	cfg       RestApiAdapterConfiguration
 	srv       *http.Server
 	ts        service.TokenizerService
 	telemetry telemetry.Telemetry
 }
 
-func New(cfg RestApiAdapterConfiguration, ts service.TokenizerService, telemetry telemetry.Telemetry) *RestApiAdapter {
+func New(cfg RestApiAdapterConfiguration, ts service.TokenizerService, telemetry telemetry.Telemetry) *restApiAdapter {
 	if !cfg.IsDebugModeEnabled {
 		gin.SetMode(gin.ReleaseMode)
 	}
-	return &RestApiAdapter{cfg: cfg, ts: ts, telemetry: telemetry}
+	return &restApiAdapter{cfg: cfg, ts: ts, telemetry: telemetry}
 }
 
-func (s *RestApiAdapter) Start(fatalErrors chan<- error) {
+func (s *restApiAdapter) Start(fatalErrors chan<- error) {
 	r := gin.New()
 	r.Use(Logger())
 	r.Use(otelgin.Middleware(s.telemetry.Config.ServiceName))
@@ -79,7 +79,7 @@ func (s *RestApiAdapter) Start(fatalErrors chan<- error) {
 	}
 }
 
-func (s *RestApiAdapter) Close(ctx context.Context) error {
+func (s *restApiAdapter) Close(ctx context.Context) error {
 	if s.srv == nil {
 		return fmt.Errorf("could not shutdown http server cause it was not set in the adapter")
 	}

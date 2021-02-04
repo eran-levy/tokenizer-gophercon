@@ -20,6 +20,10 @@ OK
 127.0.0.1:6379> keys *
 (empty array)
 
+SERVICE_LOG_LEVEL=debug;SERVICE_DB_DSN=root:123456@tcp(127.0.0.1:3306)/tokenizer
+
+
+
 cloud native apps usually handle multiple types of configurations:
 1. environment variables - defaults in code 
 2. secrets injected in env vars - not committed to version control

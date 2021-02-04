@@ -39,11 +39,13 @@ type Telemetry struct {
 }
 
 var (
-	apiRequestCounter metric.Int64Counter
-	apiRequestLatency metric.Int64ValueRecorder
-	serviceNameKV     label.KeyValue
-	statusKey         = label.Key("status")
-	pathKey           = label.Key("http.path")
+	apiRequestCounter      metric.Int64Counter
+	apiRequestLatency      metric.Int64ValueRecorder
+	tokenizeProcessCounter metric.Int64Counter
+	serviceNameKV          label.KeyValue
+	statusKey              = label.Key("status")
+	pathKey                = label.Key("http_path")
+	cacheKey               = label.Key("cache")
 )
 
 const (
@@ -112,4 +114,8 @@ func IncAPIRequestCounter(ctx context.Context, v int64, status string) {
 
 func RecordAPIRequestLatencyValue(ctx context.Context, v int64, path string, status string) {
 	apiRequestLatency.Record(ctx, v, serviceNameKV, pathKey.String(path), statusKey.String(status))
+}
+
+func IncTokenizeRequestCounter(ctx context.Context, v int64, cache bool, status string) {
+	apiRequestCounter.Add(ctx, v, serviceNameKV, cacheKey.Bool(cache), statusKey.String(status))
 }
