@@ -13,7 +13,10 @@ type Persistence interface {
 }
 
 type Config struct {
-	Dsn                   string
+	User                  string
+	Passwd                string
+	DBName                string
+	Address               string
 	ConnectionMaxLifetime time.Duration
 	MaxOpenConnections    int
 	MaxIdleConnections    int

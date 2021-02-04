@@ -33,7 +33,10 @@ type CacheParams struct {
 	ExpirationTime time.Duration
 }
 type DatabaseParams struct {
-	Dsn                   string
+	User                  string
+	Passwd                string
+	DBName                string
+	Address               string
 	ConnectionMaxLifetime time.Duration
 	MaxOpenConnections    int
 	MaxIdleConnections    int
@@ -87,7 +90,9 @@ func LoadConfig() (EnvConfiguration, error) {
 			CacheAddress:   env.GetString("service.CACHE_ADDRESS"),
 			ReadTimeout:    env.GetDuration("service.CACHE_READ_TIMEOUT"),
 			ExpirationTime: env.GetDuration("service.CACHE_KEYS_EXPIRY_TTL")},
-		Database: DatabaseParams{Dsn: env.GetString("service.DB_DSN"),
+		Database: DatabaseParams{User: env.GetString("service.DB_USER"),
+			Passwd:  env.GetString("service.DB_PASSWD"),
+			Address: env.GetString("service.DB_ADDRESS"), DBName: env.GetString("service.DB_DBNAME"),
 			ConnectionMaxLifetime: env.GetDuration("service.DB_CONNECTIONS_MAX_LIFE_TIME"),
 			MaxOpenConnections:    env.GetInt("service.DB_MAX_OPEN_CONNECTIONS"),
 			MaxIdleConnections:    env.GetInt("service.DB_MAX_IDLE_CONNECTIONS")}}, nil

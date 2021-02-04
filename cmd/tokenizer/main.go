@@ -14,9 +14,11 @@ import (
 	"github.com/eran-levy/tokenizer-gophercon/service"
 	"github.com/eran-levy/tokenizer-gophercon/telemetry"
 	"log"
+	nhtp "net/http"
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 )
 
 func main() {
@@ -47,12 +49,14 @@ func main() {
 		}
 	}
 	//setup persistence
-	repo, err := mysql.New(repository.Config{Dsn: cfg.Database.Dsn, ConnectionMaxLifetime: cfg.Database.ConnectionMaxLifetime,
+	repo, err := mysql.New(repository.Config{User: cfg.Database.User, Passwd: cfg.Database.Passwd,
+		Address: cfg.Database.Address, DBName: cfg.Database.DBName, ConnectionMaxLifetime: cfg.Database.ConnectionMaxLifetime,
 		MaxOpenConnections: cfg.Database.MaxOpenConnections, MaxIdleConnections: cfg.Database.MaxIdleConnections}, telem)
 	if err != nil {
 		logger.Log.Fatal(err)
 	}
-	ts := service.New(c, repo, telem)
+	htClient := &nhtp.Client{Timeout: time.Second * 30}
+	ts := service.New(c, repo, telem, htClient)
 	srv := http.New(http.RestApiAdapterConfiguration{HttpAddress: cfg.RESTApiAdapter.HttpAddress,
 		TerminationTimeout:   cfg.RESTApiAdapter.TerminationTimeout,
 		ReadRequestTimeout:   cfg.RESTApiAdapter.ReadRequestTimeout,

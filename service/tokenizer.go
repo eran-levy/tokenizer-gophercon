@@ -3,12 +3,15 @@ package service
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"github.com/eran-levy/tokenizer-gophercon/cache"
 	"github.com/eran-levy/tokenizer-gophercon/logger"
 	"github.com/eran-levy/tokenizer-gophercon/repository"
 	"github.com/eran-levy/tokenizer-gophercon/repository/model"
 	"github.com/eran-levy/tokenizer-gophercon/telemetry"
 	"github.com/pkg/errors"
+	"io/ioutil"
+	"net/http"
 	"strings"
 	"time"
 )
@@ -27,19 +30,18 @@ type TokenizerService interface {
 	IsServiceHealthy(ctx context.Context) (bool, error)
 }
 type tokenizer struct {
-	c cache.Cache
-	p repository.Persistence
-	t telemetry.Telemetry
+	c        cache.Cache
+	p        repository.Persistence
+	t        telemetry.Telemetry
+	htClient *http.Client
 }
 
-func New(c cache.Cache, p repository.Persistence, t telemetry.Telemetry) TokenizerService {
-	return &tokenizer{c: c, p: p, t: t}
+func New(c cache.Cache, p repository.Persistence, t telemetry.Telemetry, htClient *http.Client) TokenizerService {
+	return &tokenizer{c: c, p: p, t: t, htClient: htClient}
 }
 
 func (t *tokenizer) TokenizeText(ctx context.Context, request TokenizeTextRequest) (TokenizeTextResponse, error) {
 	//TODO: process concurrently sentences by newline
-	//TODO: call another http api to show an example of retries, etc - the http will predict text lang 200 first chars
-	//TODO: context cancelation
 	if len(request.Txt) > txtSizeLimitInBytes {
 		return TokenizeTextResponse{}, TextSizeExceedsMaxLimitBytesError
 	}
@@ -58,6 +60,12 @@ func (t *tokenizer) TokenizeText(ctx context.Context, request TokenizeTextReques
 		telemetry.IncTokenizeRequestCounter(ctx, 1, found, telemetry.SuccessStatusValue)
 		return resp, err
 	}
+	//dummy slow http request to demonstrate
+	err := doSlowCallWithRetry(ctx, t.htClient)
+	if err != nil {
+		return TokenizeTextResponse{}, errors.Wrap(err, "called slow http and failed")
+	}
+
 	//processed if this global tx id hasnt found in cache
 	spt := strings.Split(request.Txt, textSplitSepChar)
 	resp = TokenizeTextResponse{RequestId: request.RequestId, TokenizedTxt: spt, NumOfWords: len(spt)}
@@ -84,6 +92,59 @@ func (t *tokenizer) TokenizeText(ctx context.Context, request TokenizeTextReques
 	return resp, nil
 }
 
+func doSlowCallWithRetry(ctx context.Context, client *http.Client) error {
+	const (
+		numOfRetries        = 3
+		callHttpCtxTimeout  = 5 * time.Second
+		waitBetweenRequests = time.Second
+	)
+
+	retryNum := 0
+	for retryNum < numOfRetries {
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		default:
+		}
+
+		ctx, cancel := context.WithTimeout(ctx, callHttpCtxTimeout)
+		c, err := doReq(ctx, client)
+		cancel()
+		if err == nil {
+			if c == http.StatusOK {
+				return nil
+			}
+			if !isRetryable(c) {
+				return fmt.Errorf("couldnt retry http code %d", c)
+			}
+		}
+		//backoff between retries
+		time.Sleep(waitBetweenRequests)
+		retryNum++
+	}
+	return fmt.Errorf("could not call http service after retries")
+}
+
+func doReq(ctx context.Context, client *http.Client) (int, error) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, "http://localhost:3333/language", nil)
+	if err != nil {
+		return 0, err
+	}
+	req.Header.Set("Content-Type", "application/json")
+	resp, err := client.Do(req)
+	if err != nil {
+		return 0, err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return resp.StatusCode, err
+	}
+	_, err = ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return resp.StatusCode, err
+	}
+	return resp.StatusCode, err
+}
 func (t *tokenizer) IsServiceHealthy(ctx context.Context) (bool, error) {
 	h, err := t.p.IsServiceHealthy(ctx)
 	if !h {
@@ -94,4 +155,11 @@ func (t *tokenizer) IsServiceHealthy(ctx context.Context) (bool, error) {
 		return h, err
 	}
 	return h, nil
+}
+
+func isRetryable(code int) bool {
+	if code <= 399 {
+		return true
+	}
+	return false
 }

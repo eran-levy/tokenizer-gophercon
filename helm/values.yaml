@@ -14,7 +14,10 @@ service:
   CACHE_ADDRESS: "localhost:6379"
   CACHE_READ_TIMEOUT: "3s"
   CACHE_KEYS_EXPIRY_TTL: "30s"
-  DB_DSN: "some dsn configured in env vars or secrets"
+  DB_USER: "root"
+  DB_PASSWD: "some pass"
+  DB_DBNAME: "tokenizer"
+  DB_ADDRESS: "127.0.0.1:3306"
   DB_CONNECTIONS_MAX_LIFE_TIME: "1m"
   DB_MAX_OPEN_CONNECTIONS: 100
   DB_MAX_IDLE_CONNECTIONS: 100
