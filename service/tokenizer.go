@@ -24,6 +24,7 @@ var (
 
 type TokenizerService interface {
 	TokenizeText(ctx context.Context, request TokenizeTextRequest) (TokenizeTextResponse, error)
+	IsServiceHealthy(ctx context.Context) (bool, error)
 }
 type tokenizer struct {
 	c cache.Cache
@@ -81,4 +82,16 @@ func (t *tokenizer) TokenizeText(ctx context.Context, request TokenizeTextReques
 	}
 	telemetry.IncTokenizeRequestCounter(ctx, 1, found, telemetry.SuccessStatusValue)
 	return resp, nil
+}
+
+func (t *tokenizer) IsServiceHealthy(ctx context.Context) (bool, error) {
+	h, err := t.p.IsServiceHealthy(ctx)
+	if !h {
+		return h, err
+	}
+	h, err = t.c.IsServiceHealthy(ctx)
+	if !h {
+		return h, err
+	}
+	return h, nil
 }

@@ -9,6 +9,7 @@ type Cache interface {
 	Set(ctx context.Context, key string, value []byte) error
 	Get(ctx context.Context, key string) ([]byte, bool)
 	Close() error
+	IsServiceHealthy(ctx context.Context) (bool, error)
 }
 
 type Config struct {

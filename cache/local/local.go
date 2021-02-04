@@ -35,3 +35,7 @@ func (l localCache) Get(ctx context.Context, key string) ([]byte, bool) {
 	}
 	return []byte{}, found
 }
+
+func (l localCache) IsServiceHealthy(ctx context.Context) (bool, error) {
+	return true, nil
+}

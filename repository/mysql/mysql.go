@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"github.com/eran-levy/tokenizer-gophercon/logger"
 	"github.com/eran-levy/tokenizer-gophercon/repository"
 	"github.com/eran-levy/tokenizer-gophercon/repository/model"
 	"github.com/eran-levy/tokenizer-gophercon/telemetry"
@@ -72,5 +73,18 @@ func New(config repository.Config, telemetry telemetry.Telemetry) (repository.Pe
 }
 
 func (m mysqlRepository) Close() error {
-	return m.db.Close()
+	err := m.db.Close()
+	if err != nil {
+		return err
+	}
+	logger.Log.Info("gracefully closed repo client")
+	return nil
+}
+
+func (m mysqlRepository) IsServiceHealthy(ctx context.Context) (bool, error) {
+	err := m.db.Ping()
+	if err != nil {
+		return false, errors.Wrap(err, "db ping repond with an error")
+	}
+	return true, nil
 }

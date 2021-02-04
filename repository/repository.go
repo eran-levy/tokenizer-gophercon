@@ -9,6 +9,7 @@ import (
 type Persistence interface {
 	StoreMetadata(ctx context.Context, mtd model.TokenizeTextMetadata) error
 	Close() error
+	IsServiceHealthy(ctx context.Context) (bool, error)
 }
 
 type Config struct {

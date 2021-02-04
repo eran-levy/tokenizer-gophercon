@@ -66,4 +66,5 @@ func (g *grpcApiAdapter) Start(fatalErrors chan<- error) {
 func (g *grpcApiAdapter) Close() {
 	//this call pending server close, you can set timeout by creating some select timer to define time for graceful shutdown
 	g.srv.GracefulStop()
+	logger.Log.Info("gracefully closed grpc server")
 }

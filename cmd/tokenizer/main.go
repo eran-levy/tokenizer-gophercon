@@ -52,7 +52,6 @@ func main() {
 	if err != nil {
 		logger.Log.Fatal(err)
 	}
-	defer repo.Close()
 	ts := service.New(c, repo, telem)
 	srv := http.New(http.RestApiAdapterConfiguration{HttpAddress: cfg.RESTApiAdapter.HttpAddress,
 		TerminationTimeout:   cfg.RESTApiAdapter.TerminationTimeout,
@@ -69,10 +68,6 @@ func main() {
 	gracefulShutdown := make(chan os.Signal, 1)
 	signal.Notify(gracefulShutdown, os.Interrupt, syscall.SIGTERM)
 	select {
-	case err := <-fatalErrors:
-		// unexepected failures should arrive in here
-		logger.Log.Errorf("fatal error signal received %s\n", err)
-		os.Exit(1)
 	case sig := <-gracefulShutdown:
 		// try to terminal all gracefully here
 		logger.Log.Infof("observed terminal signal %v\n", sig)
@@ -89,6 +84,10 @@ func main() {
 			logger.Log.Errorf("could not close repository handlers %s \n ", err)
 		}
 		gSrv.Close()
+	case err := <-fatalErrors:
+		// unexepected failures should arrive in here
+		logger.Log.Errorf("fatal error signal received %s\n", err)
+		os.Exit(1)
 	}
 
 }

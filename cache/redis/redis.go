@@ -5,6 +5,7 @@ import (
 	"github.com/eran-levy/tokenizer-gophercon/cache"
 	"github.com/eran-levy/tokenizer-gophercon/logger"
 	"github.com/go-redis/redis/v8"
+	"github.com/pkg/errors"
 )
 
 type redisCache struct {
@@ -44,5 +45,18 @@ func (r redisCache) Get(ctx context.Context, key string) ([]byte, bool) {
 }
 
 func (r redisCache) Close() error {
-	return r.client.Close()
+	err := r.client.Close()
+	if err != nil {
+		return err
+	}
+	logger.Log.Info("gracefully closed cache server")
+	return nil
+}
+
+func (r redisCache) IsServiceHealthy(ctx context.Context) (bool, error) {
+	err := r.client.Ping(context.Background()).Err()
+	if err != nil {
+		return false, errors.Wrap(err, "cache ping failed")
+	}
+	return true, nil
 }

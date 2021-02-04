@@ -60,8 +60,8 @@ func (s *restApiAdapter) Start(fatalErrors chan<- error) {
 		fatalErrors <- err
 	}
 	r.GET("/metrics", MetricHandler(exp))
-	r.GET("/health", health)
-	r.GET("/readiness", readiness)
+	r.GET("/health", s.health)
+	r.GET("/readiness", s.readiness)
 	//its possible also to activate middleware for a given group - just by pasing the middleware to r.Group
 	v1 := r.Group("/v1")
 	v1.POST("/tokenize", s.tokenizeTextHandler)
@@ -74,7 +74,7 @@ func (s *restApiAdapter) Start(fatalErrors chan<- error) {
 	}
 	s.srv = srv
 	if err := srv.ListenAndServe(); err != nil && errors.Is(err, http.ErrServerClosed) {
-		logger.Log.Errorf("http server closed: %s\n", err)
+		logger.Log.Infof("http server closed %s", err)
 		fatalErrors <- err
 	}
 }
@@ -91,5 +91,6 @@ func (s *restApiAdapter) Close(ctx context.Context) error {
 	if err := s.srv.Shutdown(ctx); err != nil {
 		return fmt.Errorf("server forced to shutdown: %w", err)
 	}
+	logger.Log.Info("gracefully closed http server")
 	return nil
 }
