@@ -46,6 +46,9 @@ func New(cfg RestApiAdapterConfiguration, ts service.TokenizerService, telemetry
 }
 
 func (s *restApiAdapter) Start(fatalErrors chan<- error) {
+	//timeout for demonstration purposes
+	const totalTimeoutHandler = 15 * time.Second
+
 	r := gin.New()
 	r.Use(Logger())
 	r.Use(otelgin.Middleware(s.telemetry.Config.ServiceName))
@@ -64,7 +67,7 @@ func (s *restApiAdapter) Start(fatalErrors chan<- error) {
 	r.GET("/health", s.health)
 	r.GET("/readiness", s.readiness)
 	// its also possible to set timeout for specific reoute
-	r.GET("/demo", timeout.New(timeout.WithTimeout(10*time.Second), timeout.WithHandler(demo)))
+	r.GET("/demo", timeout.New(timeout.WithTimeout(totalTimeoutHandler), timeout.WithHandler(demo)))
 	//its possible also to activate middleware for a given group - just by pasing the middleware to r.Group
 	v1 := r.Group("/v1")
 	v1.POST("/tokenize", s.tokenizeTextHandler)
@@ -73,7 +76,7 @@ func (s *restApiAdapter) Start(fatalErrors chan<- error) {
 		Addr:         s.cfg.HttpAddress,
 		ReadTimeout:  s.cfg.ReadRequestTimeout,
 		WriteTimeout: s.cfg.WriteResponseTimeout,
-		Handler:      http.TimeoutHandler(r, 2*time.Second, ""),
+		Handler:      http.TimeoutHandler(r, totalTimeoutHandler, "timeout handler reached"),
 	}
 	s.srv = srv
 	if err := srv.ListenAndServe(); err != nil && errors.Is(err, http.ErrServerClosed) {

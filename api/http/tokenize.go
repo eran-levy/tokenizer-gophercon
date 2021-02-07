@@ -1,6 +1,7 @@
 package http
 
 import (
+	"context"
 	"github.com/eran-levy/tokenizer-gophercon/api/http/internal"
 	"github.com/eran-levy/tokenizer-gophercon/service"
 	"github.com/eran-levy/tokenizer-gophercon/telemetry"
@@ -8,10 +9,16 @@ import (
 	"github.com/google/uuid"
 	"go.opentelemetry.io/otel/codes"
 	"net/http"
+	"time"
 )
 
 func (s *restApiAdapter) tokenizeTextHandler(c *gin.Context) {
-	ctx, span := s.telemetry.Tracer.Start(c.Request.Context(), "tokenizeTextHandler")
+	//can be plugged in a middleware - for demonstration purposes
+	const handlerTimeout = 5 * time.Second
+	ctx, cancel := context.WithTimeout(c.Request.Context(), handlerTimeout)
+	defer cancel()
+
+	ctx, span := s.telemetry.Tracer.Start(ctx, "tokenizeTextHandler")
 	defer span.End()
 	var r internal.TokenizeTextAPIRequest
 	if c.ShouldBindJSON(&r) != nil {

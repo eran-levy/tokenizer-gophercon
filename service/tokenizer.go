@@ -75,11 +75,15 @@ func (t *tokenizer) TokenizeText(ctx context.Context, request TokenizeTextReques
 		telemetry.IncTokenizeRequestCounter(ctx, 1, found, telemetry.FailStatusValue)
 		return TokenizeTextResponse{}, errors.Wrap(err, "could not marshal resp to persist in cache")
 	}
+	//set cache aside
 	err = t.c.Set(ctx, request.GlobalTxId, b)
 	if err != nil {
 		telemetry.IncTokenizeRequestCounter(ctx, 1, found, telemetry.FailStatusValue)
 		logger.Log.With("request_id", request.RequestId).With("global_tx_id", request.GlobalTxId).With("error", err).
 			Error("could not persist response in cache")
+		if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
+			return resp, err
+		}
 	}
 	//persist in metastore
 	err = t.p.StoreMetadata(ctx, model.TokenizeTextMetadata{RequestId: request.RequestId, GlobalTxId: request.GlobalTxId, CreatedDate: time.Now().UTC(), Language: "English"})
@@ -87,6 +91,9 @@ func (t *tokenizer) TokenizeText(ctx context.Context, request TokenizeTextReques
 		telemetry.IncTokenizeRequestCounter(ctx, 1, found, telemetry.FailStatusValue)
 		logger.Log.With("request_id", request.RequestId).With("global_tx_id", request.GlobalTxId).With("error", err).
 			Error("could not persist metadata in db")
+		if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
+			return resp, err
+		}
 	}
 	telemetry.IncTokenizeRequestCounter(ctx, 1, found, telemetry.SuccessStatusValue)
 	return resp, nil
@@ -158,6 +165,8 @@ func (t *tokenizer) IsServiceHealthy(ctx context.Context) (bool, error) {
 	return h, nil
 }
 
+//obviously 429 is retryable as well but you might need to use the response headers to retry
+//intelligently
 func isRetryable(code int) bool {
 	if code <= 399 {
 		return true

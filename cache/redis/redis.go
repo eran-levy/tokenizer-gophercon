@@ -34,7 +34,7 @@ func (r redisCache) Set(ctx context.Context, key string, value []byte) error {
 
 func (r redisCache) Get(ctx context.Context, key string) ([]byte, bool) {
 	b, err := r.client.Get(ctx, key).Bytes()
-	if err == redis.Nil {
+	if err == redis.Nil { //key not exists
 		return []byte{}, false
 	} else if err != nil {
 		logger.Log.With("cache_key", key).Errorf("could not retrieve from cache %s", err)
