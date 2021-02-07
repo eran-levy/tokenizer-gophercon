@@ -9,6 +9,7 @@ import (
 )
 
 func main() {
+	//TODO: retry policy and service health configs - https://github.com/grpc/grpc-go/tree/master/examples/features
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*30)
 	defer cancel()
 	conn, err := grpc.Dial("localhost:9090", grpc.WithInsecure(), grpc.WithBlock())

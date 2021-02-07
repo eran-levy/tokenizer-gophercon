@@ -20,35 +20,54 @@ func main() {
     "text":"mytest hello"
 }
 `)
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancel()
-	retryNum := 0
-	for retryNum < numOfRetries {
-		select {
-		case <-ctx.Done():
-			log.Fatalf("context done: %s", ctx.Err())
-		default:
-
+	b, c, err := doReq(ctx, client, reqBody)
+	if err == nil {
+		log.Printf("%+v", string(b))
+		if c == http.StatusOK {
+			log.Printf("%+v", string(b))
+			return
 		}
-		ctx, cancel := context.WithTimeout(ctx, time.Second*5)
-		b, c, err := doReq(ctx, client, reqBody)
-		cancel()
-		if err == nil {
-			if c == http.StatusOK {
-				log.Printf("%+v", string(b))
-				return
-			}
-			if !isRetryable(c) {
-				log.Print("couldnt retry")
-				return
-			}
+		if !isRetryable(c) {
+			log.Print("couldnt retry")
+			return
 		}
-		time.Sleep(1 * time.Second)
-		retryNum++
 	}
+
+	//retryNum := 0
+	//for retryNum < numOfRetries {
+	//	select {
+	//	case <-ctx.Done():
+	//		log.Fatalf("context done: %s", ctx.Err())
+	//	default:
+	//
+	//	}
+	//	ctx, cancel := context.WithTimeout(ctx, time.Second)
+	//	b, c, err := doReq(ctx, client, reqBody)
+	//	cancel()
+	//	if err == nil {
+	//		if c == http.StatusOK {
+	//			log.Printf("%+v", string(b))
+	//			return
+	//		}
+	//		if !isRetryable(c) {
+	//			log.Print("couldnt retry")
+	//			return
+	//		}
+	//	}
+	//	time.Sleep(1 * time.Second)
+	//	retryNum++
+	//}
 }
 
 func doReq(ctx context.Context, client *http.Client, r *strings.Reader) ([]byte, int, error) {
+	//go func() {
+	//	select {
+	//	case <- ctx.Done():
+	//		log.Printf("routine context info: %s", ctx.Err())
+	//	}
+	//}()
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, "http://localhost:8080/v1/tokenize", r)
 	if err != nil {
 		return []byte{}, 0, err
