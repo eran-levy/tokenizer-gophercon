@@ -60,11 +60,11 @@ func (t *tokenizer) TokenizeText(ctx context.Context, request TokenizeTextReques
 		telemetry.IncTokenizeRequestCounter(ctx, 1, found, telemetry.SuccessStatusValue)
 		return resp, err
 	}
-	//dummy slow http request to demonstrate
-	err := doSlowCallWithRetry(ctx, t.htClient)
-	if err != nil {
-		return TokenizeTextResponse{}, errors.Wrap(err, "called slow http and failed")
-	}
+	//dummy slow http request for demonstration purposes
+	//err := doSlowCallWithRetry(ctx, t.htClient)
+	//if err != nil {
+	//	return TokenizeTextResponse{}, errors.Wrap(err, "called slow http and failed")
+	//}
 
 	//processed if this global tx id hasnt found in cache
 	spt := strings.Split(request.Txt, textSplitSepChar)
@@ -145,6 +145,7 @@ func doReq(ctx context.Context, client *http.Client) (int, error) {
 	}
 	return resp.StatusCode, err
 }
+
 func (t *tokenizer) IsServiceHealthy(ctx context.Context) (bool, error) {
 	h, err := t.p.IsServiceHealthy(ctx)
 	if !h {

@@ -8,6 +8,7 @@ import (
 	"github.com/eran-levy/tokenizer-gophercon/service"
 	"github.com/eran-levy/tokenizer-gophercon/telemetry"
 	"github.com/gin-contrib/pprof"
+	"github.com/gin-contrib/timeout"
 	"github.com/gin-gonic/gin"
 	"go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin"
 	"net/http"
@@ -62,6 +63,8 @@ func (s *restApiAdapter) Start(fatalErrors chan<- error) {
 	r.GET("/metrics", MetricHandler(exp))
 	r.GET("/health", s.health)
 	r.GET("/readiness", s.readiness)
+	// its also possible to set timeout for specific reoute
+	r.GET("/demo", timeout.New(timeout.WithTimeout(10*time.Second), timeout.WithHandler(demo)))
 	//its possible also to activate middleware for a given group - just by pasing the middleware to r.Group
 	v1 := r.Group("/v1")
 	v1.POST("/tokenize", s.tokenizeTextHandler)
@@ -70,7 +73,7 @@ func (s *restApiAdapter) Start(fatalErrors chan<- error) {
 		Addr:         s.cfg.HttpAddress,
 		ReadTimeout:  s.cfg.ReadRequestTimeout,
 		WriteTimeout: s.cfg.WriteResponseTimeout,
-		Handler:      r,
+		Handler:      http.TimeoutHandler(r, 2*time.Second, ""),
 	}
 	s.srv = srv
 	if err := srv.ListenAndServe(); err != nil && errors.Is(err, http.ErrServerClosed) {

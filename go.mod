@@ -4,6 +4,7 @@ go 1.15
 
 require (
 	github.com/gin-contrib/pprof v1.3.0
+	github.com/gin-contrib/timeout v0.0.1
 	github.com/gin-gonic/gin v1.6.3
 	github.com/go-redis/redis/v8 v8.4.11
 	github.com/go-sql-driver/mysql v1.5.0
@@ -22,6 +23,6 @@ require (
 	go.opentelemetry.io/otel/sdk v0.16.0
 	go.uber.org/zap v1.13.0
 	google.golang.org/grpc v1.34.0
-	google.golang.org/grpc/cmd/protoc-gen-go-grpc v1.1.0 // indirect
+	google.golang.org/grpc/cmd/protoc-gen-go-grpc v1.1.0
 	google.golang.org/protobuf v1.25.0
 )

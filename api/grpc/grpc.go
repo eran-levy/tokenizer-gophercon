@@ -53,6 +53,8 @@ func (g *grpcApiAdapter) Start(fatalErrors chan<- error) {
 	if err != nil {
 		fatalErrors <- err
 	}
+	//keepalive - just for demonstration purposes!
+	//https://github.com/grpc/grpc-go/issues/3170#issuecomment-552517779
 	g.srv = grpc.NewServer(grpc.KeepaliveParams(keepalive.ServerParameters{MaxConnectionAge: g.cfg.MaxConnectionAge,
 		MaxConnectionAgeGrace: g.cfg.MaxConnectionAgeGrace}), grpc.UnaryInterceptor(otelgrpc.UnaryServerInterceptor()))
 	tokenizer.RegisterTokenizerServer(g.srv, g)
