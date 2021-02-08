@@ -14,5 +14,3 @@ skaffold-dev:
 
 helm-template:
 	 helm template helm/tokenizer-gophercon --validate
-
-install-utils:

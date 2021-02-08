@@ -1,15 +1,17 @@
 ### Tokenizer gophercon sample service
 Setup pre-requisite - 
 go 1.15+
-docker
-microk8s?
+docker (desktop + kuberneres / other k8s distribution)
+skaffold
+helm
+
 setup and start (scripts/):
 1. mysql
 2. redis
 3. prometheus
 4. jaeger all-in-one
 5. protoc compiler and go plugins
-6. execute sql to create database and table
+6. execute sql to create the database and table
 
 Jaeger UI: http://localhost:16686/search
 
