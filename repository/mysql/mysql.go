@@ -77,7 +77,7 @@ func New(config repository.Config, telemetry telemetry.Telemetry) (repository.Pe
 	db.SetConnMaxLifetime(config.ConnectionMaxLifetime)
 	db.SetMaxOpenConns(config.MaxOpenConnections)
 	db.SetMaxIdleConns(config.MaxIdleConnections)
-	err = db.Ping()
+	err = db.PingContext(context.Background())
 	if err != nil {
 		return mysqlRepository{}, err
 	}
@@ -94,7 +94,7 @@ func (m mysqlRepository) Close() error {
 }
 
 func (m mysqlRepository) IsServiceHealthy(ctx context.Context) (bool, error) {
-	err := m.db.Ping()
+	err := m.db.PingContext(ctx)
 	if err != nil {
 		return false, errors.Wrap(err, "db ping repond with an error")
 	}

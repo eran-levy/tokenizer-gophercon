@@ -14,7 +14,7 @@ import (
 
 func (s *restApiAdapter) tokenizeTextHandler(c *gin.Context) {
 	//can be plugged in a middleware - for demonstration purposes
-	const handlerTimeout = 5 * time.Second
+	const handlerTimeout = 15 * time.Second
 	ctx, cancel := context.WithTimeout(c.Request.Context(), handlerTimeout)
 	defer cancel()
 

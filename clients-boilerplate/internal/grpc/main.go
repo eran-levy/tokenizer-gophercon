@@ -8,11 +8,12 @@ import (
 	"time"
 )
 
+//*** FOR DEMONSTRATION PURPOSES ***
 func main() {
 	//TODO: retry policy and service health configs - https://github.com/grpc/grpc-go/tree/master/examples/features
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*30)
 	defer cancel()
-	conn, err := grpc.Dial("localhost:9090", grpc.WithInsecure(), grpc.WithBlock())
+	conn, err := grpc.Dial("localhost:7070", grpc.WithInsecure(), grpc.WithBlock())
 	if err != nil {
 		log.Fatalf("did not connect: %v", err)
 	}

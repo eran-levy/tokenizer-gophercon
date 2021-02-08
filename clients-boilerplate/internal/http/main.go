@@ -9,6 +9,7 @@ import (
 	"time"
 )
 
+//*** FOR DEMONSTRATION PURPOSES ***
 func main() {
 	const numOfRetries = 3
 	//use timeout
@@ -20,19 +21,24 @@ func main() {
     "text":"mytest hello"
 }
 `)
-	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
-	b, c, err := doReq(ctx, client, reqBody)
-	if err == nil {
-		log.Printf("%+v", string(b))
-		if c == http.StatusOK {
-			log.Printf("%+v", string(b))
-			return
+	res := make(chan []byte, 1)
+	failed := make(chan error, 1)
+	go func() {
+		b, _, err := doReq(ctx, client, reqBody)
+		if err != nil {
+			failed <- err
 		}
-		if !isRetryable(c) {
-			log.Print("couldnt retry")
-			return
-		}
+		res <- b
+	}()
+	select {
+	case <-ctx.Done():
+		log.Fatalf("context Done res: %s", ctx.Err())
+	case err := <-failed:
+		log.Fatalf("sync request failed %s", err)
+	case b := <-res:
+		log.Printf("result %s", string(b))
 	}
 
 	//retryNum := 0
@@ -86,11 +92,4 @@ func doReq(ctx context.Context, client *http.Client, r *strings.Reader) ([]byte,
 		return body, resp.StatusCode, err
 	}
 	return body, resp.StatusCode, err
-}
-
-func isRetryable(code int) bool {
-	if code <= 399 {
-		return true
-	}
-	return false
 }

@@ -59,7 +59,7 @@ type EnvConfiguration struct {
 // err := envconfig.Process("", &cfg)
 func LoadConfig() (EnvConfiguration, error) {
 	const (
-		defaultValuesPath = "helm"
+		defaultValuesPath = "helm/tokenizer-gophercon"
 		valuesFileName    = "values"
 		fileType          = "yaml"
 	)

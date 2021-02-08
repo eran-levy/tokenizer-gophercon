@@ -1,0 +1,19 @@
+apiVersion: skaffold/v2beta11
+kind: Config
+build:
+  artifacts:
+    - image: tokenizer-gophercon
+deploy: #skaffold using .dockerignore for ignore[] path
+  helm:
+    releases:
+      - name: tokenizer-gophercon
+        chartPath: helm/tokenizer-gophercon
+        artifactOverrides:
+          image: tokenizer-gophercon
+        valuesFiles:
+          - helm/tokenizer-gophercon/values.yaml
+#        setValues:
+#          service.CACHE_ADDRESS: "host.docker.internal:6379"
+#          service.DB_PASSWD: "123456"
+#          service.DB_ADDRESS: "host.docker.internal:3306"
+#          service.TELEMETRY_JAEGER_ENDPOINT: "http://host.docker.internal:14268/api/traces"

@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{.Chart.Name}}
+  labels:
+    app: {{.Chart.Name}}
+spec:
+  replicas: {{.Values.replicaCount}}
+  selector:
+    matchLabels:
+      app: {{.Chart.Name}}
+  template:
+    metadata:
+      labels:
+        app: {{.Chart.Name}}
+    spec:
+      containers:
+        - name: {{.Chart.Name}}
+          image: {{.Values.image}}
+          ports:
+            - containerPort: 8080
+            - containerPort: 7070
+          livenessProbe:
+            httpGet:
+              port: 8080
+              path: /health
+            initialDelaySeconds: 3
+            periodSeconds: 3
+          readinessProbe:
+            httpGet:
+              port: 8080
+              path: /readiness
+            initialDelaySeconds: 3
+            periodSeconds: 3
+          env:
+            {{- range $key, $value := .Values.service }}
+            - name: {{ $key }}
+              value: {{ tpl ($value | quote) $ }}
+            {{- end }}

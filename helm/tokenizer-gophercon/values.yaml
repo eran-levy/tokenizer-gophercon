@@ -1,23 +1,29 @@
+replicaCount: 1
+image: tokenizer-gophercon
+
 service:
-  LOG_LEVEL: "info"
+  LOG_LEVEL: "debug"
   APPLICATION_ID: "tokenizer-gophercon"
   DEBUG_MODE_ENABLED: true
   REST_API_HTTP_ADDRESS: ":8080"
   REST_API_HTTP_TERMINATION_TIMEOUT: "5s"
   REST_API_HTTP_READ_REQUEST_TIMEOUT: "30s"
   REST_API_HTTP_WRITE_RESPONSE_TIMEOUT: "30s"
-  GRPC_API_ADDRESS: ":9090"
+  GRPC_API_ADDRESS: ":7070"
   GRPC_API_MAX_CONNECTION_AGE: "4m"
   GRPC_API_MAX_CONNECTION_AGE_GRACE: "30s"
+  # TELEMETRY_JAEGER_ENDPOINT: "http://host.docker.internal:14268/api/traces"
   TELEMETRY_JAEGER_ENDPOINT: "http://localhost:14268/api/traces"
   CACHE_SIZE_INT: 5
+  # CACHE_ADDRESS: "host.docker.internal:6379"
   CACHE_ADDRESS: "localhost:6379"
   CACHE_READ_TIMEOUT: "3s"
   CACHE_KEYS_EXPIRY_TTL: "30s"
   DB_USER: "root"
-  DB_PASSWD: "some pass"
+  DB_PASSWD: "123456"
   DB_DBNAME: "tokenizer"
-  DB_ADDRESS: "127.0.0.1:3306"
+  # DB_ADDRESS: "host.docker.internal:3306"
+  DB_ADDRESS: "localhost:3306"
   DB_CONNECTIONS_MAX_LIFE_TIME: "1m"
   DB_MAX_OPEN_CONNECTIONS: 100
   DB_MAX_IDLE_CONNECTIONS: 100

@@ -47,7 +47,7 @@ func New(cfg RestApiAdapterConfiguration, ts service.TokenizerService, telemetry
 
 func (s *restApiAdapter) Start(fatalErrors chan<- error) {
 	//timeout for demonstration purposes
-	const totalTimeoutHandler = 15 * time.Second
+	const totalTimeoutHandler = 25 * time.Second
 
 	r := gin.New()
 	r.Use(Logger())
