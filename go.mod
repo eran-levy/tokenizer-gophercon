@@ -8,11 +8,13 @@ require (
 	github.com/gin-gonic/gin v1.6.3
 	github.com/go-redis/redis/v8 v8.4.11
 	github.com/go-sql-driver/mysql v1.5.0
+	github.com/golang/mock v1.4.4
 	github.com/golang/protobuf v1.4.3
 	github.com/google/uuid v1.2.0
 	github.com/hashicorp/golang-lru v0.5.1
 	github.com/pkg/errors v0.9.1
 	github.com/spf13/viper v1.7.1
+	github.com/stretchr/testify v1.6.1
 	go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin v0.16.0
 	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.16.0
 	go.opentelemetry.io/contrib/instrumentation/host v0.16.0

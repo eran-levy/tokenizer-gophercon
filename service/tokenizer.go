@@ -41,7 +41,7 @@ func New(c cache.Cache, p repository.Persistence, t telemetry.Telemetry, htClien
 }
 
 func (t *tokenizer) TokenizeText(ctx context.Context, request TokenizeTextRequest) (TokenizeTextResponse, error) {
-	//TODO: process concurrently sentences by newline
+	//TODO: maybe you want to have a workerpool to process concurrently by newline?
 	if len(request.Txt) > txtSizeLimitInBytes {
 		return TokenizeTextResponse{}, TextSizeExceedsMaxLimitBytesError
 	}
@@ -65,7 +65,6 @@ func (t *tokenizer) TokenizeText(ctx context.Context, request TokenizeTextReques
 	//if err != nil {
 	//	return TokenizeTextResponse{}, errors.Wrap(err, "called slow http and failed")
 	//}
-
 	//processed if this global tx id hasnt found in cache
 	spt := strings.Split(request.Txt, textSplitSepChar)
 	resp = TokenizeTextResponse{RequestId: request.RequestId, TokenizedTxt: spt, NumOfWords: len(spt)}
