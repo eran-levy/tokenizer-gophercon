@@ -1,5 +1,6 @@
 ## Tokenizer Gophercon sample service
 ### Gophercon 2021 Workshop
+Slides: Building cloud native service in Go.pdf
 Setup pre-requisite -
 * Go 1.15+
 * Docker desktop + Kubernetes enabled:
